@@ -7,8 +7,7 @@ input         rst_n;
 //__Stage1 (IF)___________________________________________________
 // Below for Mux for jump feature
 //wire [32-1:0] PC_src2;						//Mux for Branch & PC+4
-// wire [32-1:0] jump_addr;					// {{PC_+4[31:28]}{instr_x4}}
-// assign jump_addr = {PC_plus4[31:28],instr[25:0],2'b00};
+
 // Mux2to1 #(.size(32)) Mux_PC_next(
 		// .data0_i(PC_src2),
 		// .data1_i(jump_addr),
@@ -31,12 +30,19 @@ Mux2to1 #(.size(32)) Mux_branch_PCplus4(
         .select_i(PCSrc),
         .data_o(PC_src2)
         );
-
 		
 wire [32-1:0] PC_current;					//Program Counter	
 
+wire Jump_2;
+wire [32-1:0] jump_addr_3;
 wire [32-1:0] PC_next;						//Mux for Jump &  jr & branch_addr(include PC+4)
-assign PC_next = PC_src2;
+Mux2to1 #(.size(32)) MuxJumpORBranch(
+        .data0_i(PC_src2),				//0: PC+4
+        .data1_i(jump_addr_3),		//1: branch_addr
+        .select_i(Jump_2),
+        .data_o(PC_next)
+        );
+
 Program_Counter PC(
         .clk_i(clk_i),      
 	    .rst_n(rst_n),     
@@ -68,7 +74,6 @@ reg_IF_ID REG1(
 		);
 
 //__Stage2 ( ID )___________________________________________________
-
 wire [11-1:0] decoder_1;
 Decoder Decoder(
         .instr_op_i(instr_2[31:26]),
@@ -136,6 +141,8 @@ Zero_Filled ZF(
         .data_o(zerofilled_result_1)
         );
 
+wire [32-1:0] jump_addr_1, jump_addr_2;
+	assign jump_addr_1 =  {PC_plus4_2[31:28],instr_2[25:0],2'b00};	
 wire [5-1:0]	rs_o;
 wire [32-1:0] PC_plus4_3;
 wire [32-1:0] ReadData1_2, ReadData2a_2, ReadData2b_2, zerofilled_result_2;
@@ -151,6 +158,7 @@ reg_ID_EX REG2(
 		.zero_filled_i(zerofilled_result_1), 
 		.instruction_i(instr_2[20:0]),
 		.rs_i( instr_2[25:21] ),
+		.jump_addr_i( jump_addr_1 ),
 		.decoder_o(decoder_2), 
 		.PC_plus4_o(PC_plus4_3), 
 		.ReadData1_o(ReadData1_2), 
@@ -158,7 +166,8 @@ reg_ID_EX REG2(
 		.signed_extension_o(ReadData2b_2), 
 		.zero_filled_o(zerofilled_result_2),
 		.instruction_o(instr_3),
-		.rs_o( rs_o )
+		.rs_o( rs_o ),
+		.jump_addr_o( jump_addr_2 ),
 );
 
  //__Stage3 ( EX )___________________________________________________
@@ -177,15 +186,15 @@ Adder Adder2(
 
 wire [5-1:0] ALU_operation;				//ALU Control(5bit)
 wire [2-1:0] FURslt;
-wire Jump;								//ALU Control(2bit)
 wire shamt_mux;								//Mux of shift amount		
+wire Jump_1;
  ALU_Ctrl AC(
         .funct_i(instr_3[5:0]),   
         .ALUOp_i(decoder_2[8:6]),   
         .ALU_operation_o(ALU_operation),
 		.FURslt_o(FURslt),
 		.shamt_o(shamt_mux),
-		.Jump_o(Jump)
+		.Jump_o(Jump_1)
         );
 
 wire [32-1:0] shifter_result;				//Shifter
@@ -297,12 +306,16 @@ wire [32-1:0] ReadData2a_3;
 		.FURslt_i(FUmux_o_1), 
 		.ReadData2_i(ReadData2a_2), 
 		.instruction_i(RegisterToWrite),
+		.jump_addr_i( jump_addr_2 ),
+		.jump_i( Jump_1 ),
 		.decoder_o(decoder_3),
 		.PC_plus4_o(branch_addr_2), 
 		.zero_o(branchMux_o_2), 
 		.FURslt_o(FUmux_o_2), 
 		.ReadData2_o(ReadData2a_3), 
-		.instruction_o(instr_4) 
+		.instruction_o(instr_4),
+		.jump_addr_o ( jump_addr_3 ),
+		.jump_o( Jump_2 ),
 );
  
   //__Stage4 ( Mem )___________________________________________________

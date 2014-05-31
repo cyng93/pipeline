@@ -23,7 +23,8 @@ assign ALUOp_o = 	(instr_op_i==6'd0)?3'd2 : 										//R-type	: 2(010)
 								(instr_op_i == 6'd35||instr_op_i == 6'd43)?3'd0:		//lw,sw	: 0(000)
 								(instr_op_i == 6'd4)?3'd1:										//beq		: 1(001)
 								(instr_op_i == 6'd5)?3'd6:										//bne		: 6(110)
-								//(instr_op_i == 6'd3)?3'd3:										//jal		: 3(011)
+								(instr_op_i == 6'd2)?3'd3:										//jump		: 3(110)
+								//(instr_op_i == 6'd3)?3'd7:									//jal		: 3(011)
 								3'd7;																		//default: 7(111)
 					
 assign ALUSrc_o = (instr_op_i==6'd0 || instr_op_i==6'd4 || instr_op_i==6'd5)?1'd0 : 1'd1;
