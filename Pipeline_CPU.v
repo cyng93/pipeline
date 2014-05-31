@@ -219,7 +219,7 @@ Mux2to1 #(.size(32)) Mux_ShiftAmt_Reg(
 
 
 
-wire [2-1:0] forwardA, forwardB;
+wire [2-1:0] forwardA, forwardB, forwardC;
 wire [5-1:0] instr_4;
 Forwarding_Unit ForwardingUnit( 
 	.EM_registertowrite(instr_4), 
@@ -229,7 +229,8 @@ Forwarding_Unit ForwardingUnit(
 	.IE_rs( rs_o ), 
 	.IE_rt( instr_3[20:16] ), 
 	.forwardA( forwardA ), 
-	.forwardB( forwardB )
+	.forwardB( forwardB ),
+	.forwardC( forwardC )
 	);
 
 wire [32-1:0] FUmux_o_2;	
@@ -251,6 +252,15 @@ Mux3to1 #(.size(32)) MuxforwardB(
       .select_i( forwardB ),
       .data_o( MuxforwardB_o )
         );			
+		
+wire [32-1:0] MuxforwardC_o;
+Mux3to1 #(.size(32)) MuxforwardC(
+      .data0_i( ReadData2a_2 ),
+	  .data1_i( DataToWrite ),
+      .data2_i( FUmux_o_2 ),
+      .select_i( forwardC ),
+      .data_o( MuxforwardC_o )
+        );
 		
 wire [32-1:0] ALUSrc2;						//Mux for ALU Source2		
 Mux2to1 #(.size(32)) ALU_src2Src(
@@ -315,7 +325,7 @@ wire [32-1:0] ReadData2a_3;
 		.PC_plus4_i(branch_addr_1), 
 		.zero_i(branchMux_o_1), 
 		.FURslt_i(FUmux_o_1), 
-		.ReadData2_i(ReadData2a_2), 
+		.ReadData2_i(MuxforwardC_o), 
 		.instruction_i(RegisterToWrite),
 		.jump_addr_i( jump_addr_2 ),
 		.jump_i( Jump_1 ),
