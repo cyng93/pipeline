@@ -218,13 +218,6 @@ Mux2to1 #(.size(32)) Mux_ShiftAmt_Reg(
         );
 
 
-wire [32-1:0] ALUSrc2;						//Mux for ALU Source2		
-Mux2to1 #(.size(32)) ALU_src2Src(
-        .data0_i(ReadData2a_2),
-        .data1_i(ReadData2b_2),
-        .select_i(decoder_2[5]),
-        .data_o(ALUSrc2)
-        );	
 
 wire [2-1:0] forwardA, forwardB;
 wire [5-1:0] instr_4;
@@ -251,13 +244,21 @@ Mux3to1 #(.size(32)) MuxforwardA(
 		
 
 wire [32-1:0] MuxforwardB_o;
-Mux3to1 #(.size(32)) Mux_forwardB(
-      .data0_i(ALUSrc2),
+Mux3to1 #(.size(32)) MuxforwardB(
+      .data0_i(ReadData2a_2),
 	  .data1_i(DataToWrite),
       .data2_i(FUmux_o_2),
       .select_i( forwardB ),
       .data_o( MuxforwardB_o )
         );			
+		
+wire [32-1:0] ALUSrc2;						//Mux for ALU Source2		
+Mux2to1 #(.size(32)) ALU_src2Src(
+        .data0_i(MuxforwardB_o),
+        .data1_i(ReadData2b_2),
+        .select_i(decoder_2[5]),
+        .data_o(ALUSrc2)
+        );	
 		
 Shifter shifter( 
 		.result(shifter_result), 
@@ -270,7 +271,7 @@ wire [32-1:0] ALU_result;					//ALU (32bit)
 wire ALU_zero, ALU_overflow;			//ALU (1bit)		
 ALU ALU(
 		.aluSrc1(MuxforwardA_o),
-	    .aluSrc2(MuxforwardB_o),
+	    .aluSrc2( ALUSrc2 ),
 	    .ALU_operation_i(ALU_operation),
 		.result(ALU_result),
 		.zero(ALU_zero),
