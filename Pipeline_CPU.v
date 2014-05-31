@@ -52,7 +52,7 @@ Program_Counter PC(
 	    .rst_n(rst_n),     
 	    .pc_in_i(PC_next) ,   
 	    .pc_out_o(PC_current),
-		PCWrite( PCWrite )
+		.PCWrite( PCWrite )
 	    );
 
 Adder Adder1(
