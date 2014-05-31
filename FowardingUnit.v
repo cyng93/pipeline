@@ -1,6 +1,6 @@
 module Forwarding_Unit( EM_registertowrite, MW_registertowrite, EM_writeback, MW_writeback, IE_rs, IE_rt, forwardA, forwardB );
 
-input wire [5-1:0] EM_registertowrite, MW_registertowrite, IE_rs. IE_rt;
+input wire [5-1:0] EM_registertowrite, MW_registertowrite, IE_rs, IE_rt;
 input EM_writeback, MW_writeback;
 
 output wire [2-1:0] forwardA, forwardB;

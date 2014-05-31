@@ -31,9 +31,12 @@ Mux2to1 #(.size(32)) Mux_branch_PCplus4(
         .data_o(PC_src2)
         );
 		
+wire Jump_2;
+wire flush3reg;
+assign flush3reg = ( PCSrc || Jump_2 );
+
 wire [32-1:0] PC_current;					//Program Counter	
 
-wire Jump_2;
 wire [32-1:0] jump_addr_3;
 wire [32-1:0] PC_next;						//Mux for Jump &  jr & branch_addr(include PC+4)
 Mux2to1 #(.size(32)) MuxJumpORBranch(
@@ -43,11 +46,13 @@ Mux2to1 #(.size(32)) MuxJumpORBranch(
         .data_o(PC_next)
         );
 
+wire PCWrite;
 Program_Counter PC(
         .clk_i(clk_i),      
 	    .rst_n(rst_n),     
 	    .pc_in_i(PC_next) ,   
-	    .pc_out_o(PC_current) 
+	    .pc_out_o(PC_current),
+		PCWrite( PCWrite )
 	    );
 
 Adder Adder1(
@@ -64,9 +69,12 @@ Instr_Memory IM(
 
 wire [32-1:0] instr_2;					//Instruction Memory
 wire [32-1:0] PC_plus4_2;
+wire IIWrite;
 reg_IF_ID REG1(
         .clk_i(clk_i),      
-	    .rst_n(rst_n),   
+	    .rst_n(rst_n),  
+		.flushreg_i( flush3reg ),
+		.IIWrite( IIWrite ),
 		.PC_plus4_i(PC_plus4_1),
 		.instruction_i(instr_1),
 		.PC_plus4_o(PC_plus4_2),
@@ -91,8 +99,9 @@ Decoder Decoder(
 		.BranchType_o(decoder_1[10])
 		);
 
-wire PCWrite, IIWrite, ControlFlush;
+wire ControlFlush;
 wire [11-1:0] decoder_2;
+wire [21-1:0] instr_3;
 HazardDectection_Unit HazardDectectionUnit(
 	.IE_memread( decoder_2[3] ) , 
 	.IE_rt( instr_3[20:16] ), 
@@ -146,10 +155,10 @@ wire [32-1:0] jump_addr_1, jump_addr_2;
 wire [5-1:0]	rs_o;
 wire [32-1:0] PC_plus4_3;
 wire [32-1:0] ReadData1_2, ReadData2a_2, ReadData2b_2, zerofilled_result_2;
-wire [21-1:0] instr_3;
 reg_ID_EX REG2(
         .clk_i(clk_i),      
 	    .rst_n(rst_n),     
+		.flushreg_i( flush3reg ),
 		.decoder_i(MuxControlFlush_o), 
 		.PC_plus4_i(PC_plus4_2), 
 		.ReadData1_i(ReadData1_1),
@@ -167,7 +176,7 @@ reg_ID_EX REG2(
 		.zero_filled_o(zerofilled_result_2),
 		.instruction_o(instr_3),
 		.rs_o( rs_o ),
-		.jump_addr_o( jump_addr_2 ),
+		.jump_addr_o( jump_addr_2 )
 );
 
  //__Stage3 ( EX )___________________________________________________
@@ -229,7 +238,8 @@ Forwarding_Unit ForwardingUnit(
 	.forwardA( forwardA ), 
 	.forwardB( forwardB )
 	);
-		
+
+wire [32-1:0] FUmux_o_2;	
 wire [32-1:0] MuxforwardA_o;
 Mux3to1 #(.size(32)) MuxforwardA(
       .data0_i(ReadData1_2),
@@ -295,11 +305,11 @@ Mux2to1 #(.size(1)) Mux_branchtype(
       .data_o(branchMux_o_1)
         );		
 
-wire [32-1:0] FUmux_o_2;
 wire [32-1:0] ReadData2a_3;
  reg_EX_MEM  REG3(
         .clk_i(clk_i),      
 	    .rst_n(rst_n),    
+		.flushreg_i( flush3reg ),
 		.decoder_i(decoder_2[4:0]),
 		.PC_plus4_i(branch_addr_1), 
 		.zero_i(branchMux_o_1), 
@@ -315,7 +325,7 @@ wire [32-1:0] ReadData2a_3;
 		.ReadData2_o(ReadData2a_3), 
 		.instruction_o(instr_4),
 		.jump_addr_o ( jump_addr_3 ),
-		.jump_o( Jump_2 ),
+		.jump_o( Jump_2 )
 );
  
   //__Stage4 ( Mem )___________________________________________________

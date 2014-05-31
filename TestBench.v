@@ -18,7 +18,6 @@ reg         CLK;
 reg         RST;
 integer     count;
 integer     i;
-integer     handle;
 
 //Greate tested modle  
 Pipeline_CPU cpu(
@@ -32,21 +31,14 @@ always #(`CYCLE_TIME/2) CLK = ~CLK;
 
 initial  begin
 
-$readmemb("CO_P5_test1.txt", cpu.IM.Instr_Mem);
-    
 	CLK = 0;
 	RST = 0;
-	count = 0;
+		
+    $readmemb("CO_P6_test1.txt", cpu.IM.Instr_Mem);
     
     #(`CYCLE_TIME)      RST = 1;
-    #(`CYCLE_TIME*40)      $stop;
+    #(`CYCLE_TIME*30)
 
-end
-
-
-always@(posedge CLK) begin
-    count = count + 1;
-	if( count == 30 ) begin 
 	//print result to transcript 
 	$display("Register===========================================================\n");
 	$display("r0=%0d, r1=%0d, r2=%0d, r3=%0d, r4=%0d, r5=%0d, r6=%0d, r7=%0d\n",
@@ -76,11 +68,12 @@ always@(posedge CLK) begin
 				 cpu.DM.memory[20], cpu.DM.memory[21], cpu.DM.memory[22], cpu.DM.memory[23],
 				 cpu.DM.memory[24], cpu.DM.memory[25], cpu.DM.memory[26], cpu.DM.memory[27],
 				 cpu.DM.memory[28], cpu.DM.memory[29], cpu.DM.memory[30], cpu.DM.memory[31]
-			  );
-			  
-	end
-	else ;
+	);
+
+	$stop;
+
 end
+
   
 endmodule
 

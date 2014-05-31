@@ -6,7 +6,7 @@ output wire[32-1:0] PC_plus4_o, instruction_o;
 reg [64-1:0] reg1, reg1_w;
 
 always @(*) begin
-	if(IIWrite && !flushreg_i) begin
+	if(IIWrite) begin
 		reg1_w[63:32] = PC_plus4_i;
 		reg1_w[31:0] = instruction_i;
 	end
@@ -27,7 +27,7 @@ end
 
 
 assign PC_plus4_o = reg1[63:32];
-assign instruction_o = reg1[31:0];
+assign instruction_o = reg1[31:0
 
 
-endmodule 
+endmodule
