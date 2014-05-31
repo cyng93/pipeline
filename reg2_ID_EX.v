@@ -1,4 +1,4 @@
-module reg_ID_EX (clk_i, rst_n, flushreg_i, decoder_i, PC_plus4_i, ReadData1_i, ReadData2_i, signed_extension_i, zero_filled_i, instruction_i, rs_i , jump_addr_i
+module reg_ID_EX (clk_i, rst_n, flushreg_i, decoder_i, PC_plus4_i, ReadData1_i, ReadData2_i, signed_extension_i, zero_filled_i, instruction_i, rs_i , jump_addr_i,
  decoder_o, PC_plus4_o, ReadData1_o, ReadData2_o, signed_extension_o, zero_filled_o, instruction_o, rs_o, jump_addr_o);
 
 input wire clk_i, rst_n, flushreg_i;
