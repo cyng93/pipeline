@@ -34,10 +34,10 @@ initial  begin
 	CLK = 0;
 	RST = 0;
 		
-    $readmemb("CO_P6_test1.txt", cpu.IM.Instr_Mem);
+    $readmemb("CO_P4_test_data1.txt", cpu.IM.Instr_Mem);
     
     #(`CYCLE_TIME)      RST = 1;
-    #(`CYCLE_TIME*30)
+    #(`CYCLE_TIME*40)
 
 	//print result to transcript 
 	$display("Register===========================================================\n");
